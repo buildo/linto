@@ -50,3 +50,33 @@ which you can override by passing a configuration like
   }
 }
 ```
+
+## Known limitations
+This currently works with standard eslint rules and `eslint-config-buildo`.
+This means you cannot test rules coming from an arbitrary plugin.
+
+An easy workaround is to clone this repo, then
+
+```
+# install dependencies
+yarn
+# install custom plugin
+yarn add eslint-plugin-whatever
+```
+
+and use it like:
+
+```
+yarn start -- --config=config.json
+```
+
+where `config.json` looks like:
+
+```json
+{
+  "plugins": ["whatever"],
+  "rules": {
+    "whatever/rule": 2
+  }
+}
+```
