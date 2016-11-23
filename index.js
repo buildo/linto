@@ -36,7 +36,7 @@ function checkRepo(repo: Repo, eslintConfig: ESLintConfig = {}) {
   tmp.dir({ unsafeCleanup: true }, (err, path, cleanupCallback) => {
     log(repo)(`created tmp directory ${path}`);
     log(repo)('cloning repo...');
-    git.clone(`git@github.com:${repo.owner}/${repo.name}`, path, (err, r) => {
+    git.clone(`git@github.com:${repo.owner}/${repo.name}`, path, 1, (err, r) => {
       if (err) {
         log(repo)(err);
         return;
