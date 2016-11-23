@@ -1,0 +1,33 @@
+{
+  "name": "linto",
+  "version": "1.0.0",
+  "main": "lib",
+  "author": "buildo",
+  "license": "MIT",
+  "bin": {
+    "linto": "lib/index.js"
+  },
+  "dependencies": {
+    "babel-eslint": "^7.1.1",
+    "colors": "^1.1.2",
+    "eslint": "^3.10.2",
+    "eslint-config-buildo": "github:buildo/eslint-config",
+    "gift": "^0.10.0",
+    "tmp": "^0.0.31",
+    "yargs": "^6.4.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-plugin-transform-async-to-generator": "^6.16.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0",
+    "babel-plugin-transform-flow-strip-types": "^6.18.0",
+    "flow-bin": "^0.35.0",
+    "flow-remove-types": "^1.0.5"
+  },
+  "scripts": {
+    "start": "flow-node index.js",
+    "flow": "flow",
+    "build": "mkdir -p lib && flow-remove-types index.js > lib/index.js",
+    "prepublish": "npm run flow && npm run build"
+  }
+}
