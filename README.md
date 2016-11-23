@@ -44,7 +44,7 @@ which you can override by passing a configuration like
 
 ```json
 {
-  "extends": undefined,
+  "extends": null,
   "rules": {
     "semi": 2
   }
@@ -57,7 +57,7 @@ This means you cannot test rules coming from an arbitrary plugin.
 
 An easy workaround is to clone this repo, then
 
-```
+```bash
 # install dependencies
 yarn
 # install custom plugin
@@ -66,7 +66,7 @@ yarn add eslint-plugin-whatever
 
 and use it like:
 
-```
+```bash
 yarn start -- --config=config.json
 ```
 
