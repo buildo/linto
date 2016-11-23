@@ -31,3 +31,22 @@ where `config.json` has the following structure:
   }
 }
 ```
+
+The default configuration is
+
+```json
+{
+  "extends": "buildo"
+}
+```
+
+which you can override by passing a configuration like
+
+```json
+{
+  "extends": undefined,
+  "rules": {
+    "semi": 2
+  }
+}
+```
