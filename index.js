@@ -24,7 +24,7 @@ const log = ({ owner, name }: Repo) => (message: string) => {
   const repoName = `${owner}/${name}`;
   if (!repoColors[repoName]) {
     const available = ['yellow', 'red', 'green', 'blue', 'cyan', 'magenta'];
-    const randomColor = available[Math.round(Math.random() * available.length - 1)];
+    const randomColor = available[Math.floor(Math.random() * available.length)];
     repoColors[repoName] = randomColor;
   }
   console.log(colors[repoColors[repoName]](`[${repoName}]`), ` ${message}`);
