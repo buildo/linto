@@ -32,7 +32,17 @@ where `config.json` has the following structure:
 }
 ```
 
-The default configuration is
+By default, linto checks the `src` and the `src/web` directories of each repo. This default can be overridden on a repo base:
+
+```json
+  "repos": [{
+    "owner": "buildo",
+    "name": "someMonoRepo",
+    "paths": ["thefrontend/src"]
+  }]
+}```
+
+The default ESLint configuration is
 
 ```json
 {

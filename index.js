@@ -15,7 +15,8 @@ type ESLintConfig = {
 
 type Repo = {
   owner: string,
-  name: string
+  name: string,
+  paths: ?Array<string>
 };
 
 type Result = {
@@ -56,7 +57,8 @@ function checkRepo(repo: Repo, eslintConfig: ESLintConfig = {}): Promise<void> {
             baseConfig: Object.assign({}, defaultBaseConfig, eslintConfig)
           };
           const cli = new CLIEngine(config);
-          const report = cli.executeOnFiles(['src']);
+          const files = repo.paths || ['src', 'web/src'];
+          const report = cli.executeOnFiles(files);
           const formatter = cli.getFormatter('stylish');
           if (report.errorCount > 0) {
             log(repo)(formatter(report.results));
