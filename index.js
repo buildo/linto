@@ -10,6 +10,8 @@ const git = require('gift');
 const npmi = require('npmi');
 const clipboard = require('copy-paste');
 const ProgressBar = require('progress');
+const table = require('markdown-table');
+const emoji = require('node-emoji').emoji;
 
 type ESLintConfig = {
   rules?: { [_: string]: 0 | 1 | 2 | Object },
@@ -93,13 +95,13 @@ function installPlugin(plugin: string, path: string): Promise<InstalledPlugin> {
 }
 
 function installPlugins(plugins: Array<string>): Promise<Array<InstalledPlugin>> {
-  console.log(colors.bold('🔧  Installing plugins...'))
+  console.log(colors.bold(`${emoji.wrench}  Installing plugins...`))
   return makeTmp()
     .then(path => {
       return Promise.all(plugins.map(plugin => installPlugin(plugin, path)))
     })
     .then(installedPlugins => {
-      console.log(colors.bold('🔧  Done!\n'));
+      console.log(colors.bold(`${emoji.wrench}  Done!\n`));
       return installedPlugins;
     });
 }
@@ -133,9 +135,10 @@ function checkRepo(repo: Repo, eslintConfig: ESLintConfig = {}, installedPlugins
       const files = repo.paths || ['src', 'web/src'];
       const report = cli.executeOnFiles(files);
       if (report.errorCount > 0) {
-        progressBars[repoFullName(repo)].tick({ phase: `⛔️  Done! ${report.errorCount} errors` });
+        progressBars[repoFullName(repo)].tick({ phase: `${emoji.x}  Done! ${report.errorCount} errors` });
       } else {
-        progressBars[repoFullName(repo)].tick({ phase: '✅  Done! No errors!' });
+
+        progressBars[repoFullName(repo)].tick({ phase: `${emoji.white_check_mark}  Done! No errors!` });
       }
       return { repo, report, path };
     });
@@ -173,16 +176,16 @@ installPlugins(config.eslintConfig.plugins || [])
   return Promise.all(config.repos.map(repo => checkRepo(repo, config.eslintConfig, installedPlugins).catch(e => log(repo)(e))));
 })
 .then(results => {
-  const icon = errorCount => errorCount > 0 ? '⛔️' : '✅';
-  const entries = results.map(({ repo: { owner, name }, report: { errorCount } }) => `|${icon(errorCount)} | ${owner}/${name} | ${errorCount} |`).join('\n');
-  const table = [
-    '| |  repo   | errors |',
-    '|-|---------|--------|',
-    `${entries}`
-  ].join('\n');
+  const icon = errorCount => errorCount > 0 ? emoji.x : emoji.white_check_mark;
+  const report = table([
+   ['', 'repo', 'errors', 'warnings'],
+   ...results.map(({ repo, report: { errorCount, warningCount } }) => [icon(errorCount), repoFullName(repo), errorCount, warningCount]),
+  ], {
+    align: ['c', 'l', 'c', 'c']
+  });
   console.log();
   if (results.filter(r => r.report.errorCount > 0).length > 0) {
-    console.log(colors.bold('👇  Here\'s all the errors I\'ve found 👇\n'));
+    console.log(colors.bold(`${emoji.point_down}  Here's all the errors I've found ${emoji.point_down}\n`));
   }
   const formatter = new CLIEngine(config).getFormatter('codeframe');
   results.forEach(({ repo, report, path }) => {
@@ -190,14 +193,14 @@ installPlugins(config.eslintConfig.plugins || [])
     // This then ensures we print paths relative to each repo root.
     process.chdir(path);
     if (report.errorCount > 0) {
-      log(repo)(formatter(report.results));
+      log(repo)(`\n${formatter(report.results)}\n`);
     }
   });
 
-  console.log(colors.bold('🎉  Here\'s your linto report!\n'));
-  console.log(table);
+  console.log(colors.bold(`${emoji.tada}  Here's your linto report!\n`));
+  console.log(report);
   console.log();
-  clipboard.copy(table, () => console.log('📋  Automatically copied to the clipboard!\n'));
+  clipboard.copy(report, () => console.log(`${emoji.clipboard}  Automatically copied to the clipboard!\n`));
 
 });
 

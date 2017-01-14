@@ -10,8 +10,8 @@
   "bin": {
     "linto": "lib/index.js"
   },
-  "engines" : {
-    "node" : ">=6"
+  "engines": {
+    "node": ">=6"
   },
   "dependencies": {
     "babel-eslint": "^7.1.1",
@@ -20,9 +20,11 @@
     "eslint": "^3.10.2",
     "eslint-config-buildo": "github:buildo/eslint-config",
     "gift": "^0.10.0",
+    "markdown-table": "^1.0.0",
+    "node-emoji": "^1.5.0",
     "npmi": "^2.0.1",
-    "tmp": "^0.0.31",
     "progress": "^1.1.5",
+    "tmp": "^0.0.31",
     "yargs": "^6.4.0"
   },
   "devDependencies": {
