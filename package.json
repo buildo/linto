@@ -10,6 +10,9 @@
   "bin": {
     "linto": "lib/index.js"
   },
+  "engines" : {
+    "node" : ">=6"
+  },
   "dependencies": {
     "babel-eslint": "^7.1.1",
     "colors": "^1.1.2",
