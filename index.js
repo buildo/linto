@@ -192,7 +192,7 @@ installPlugins(config.eslintConfig.plugins || [])
     // The 'codeframe' formatter prints paths relative to the cwd.
     // This then ensures we print paths relative to each repo root.
     process.chdir(path);
-    if (report.errorCount > 0) {
+    if (report.errorCount > 0 || report.warningCount > 0) {
       log(repo)(`\n${formatter(report.results)}\n`);
     }
   });
