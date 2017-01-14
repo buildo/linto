@@ -9,6 +9,7 @@ const { CLIEngine } = require('eslint');
 const git = require('gift');
 const npmi = require('npmi');
 const clipboard = require('copy-paste');
+const ProgressBar = require('progress');
 
 type ESLintConfig = {
   rules?: { [_: string]: 0 | 1 | 2 | Object },
@@ -25,19 +26,25 @@ type Repo = {
 
 type Result = {
   repo: Repo,
-  errorCount: number
+  report: {
+    errorCount: number
+  }
 };
 
 const repoColors = { };
 
-const log = ({ owner, name }: Repo) => (message: string) => {
-  const repoName = `${owner}/${name}`;
+const colored = (repo: Repo) => (message: string): string => {
+  const repoName = repoFullName(repo);
   if (!repoColors[repoName]) {
     const available = ['yellow', 'red', 'green', 'blue', 'cyan', 'magenta'];
     const randomColor = available[Math.floor(Math.random() * available.length)];
     repoColors[repoName] = randomColor;
   }
-  console.log(colors[repoColors[repoName]](`[${repoName}]`), ` ${message}`);
+  return colors[repoColors[repoName]](message);
+}
+
+const log = (repo: Repo) => (message: string) => {
+  console.log(colored(repo)(`[${repoFullName(repo)}]`), ` ${message}`);
 }
 
 tmp.setGracefulCleanup();
@@ -85,9 +92,15 @@ function installPlugin(plugin: string, path: string): Promise<InstalledPlugin> {
 }
 
 function installPlugins(plugins: Array<string>): Promise<Array<InstalledPlugin>> {
-  return makeTmp().then(path => {
-    return Promise.all(plugins.map(plugin => installPlugin(plugin, path)));
-  });
+  console.log(colors.bold('🔧  Installing plugins...'))
+  return makeTmp()
+    .then(path => {
+      return Promise.all(plugins.map(plugin => installPlugin(plugin, path)))
+    })
+    .then(installedPlugins => {
+      console.log(colors.bold('🔧  Done!\n'));
+      return installedPlugins;
+    });
 }
 
 function pluginFullName(plugin: string): string {
@@ -95,17 +108,20 @@ function pluginFullName(plugin: string): string {
   return plugin.indexOf(prefix) === 0 ? plugin : `${prefix}${plugin}`;
 }
 
+function repoFullName(repo: Repo): string {
+  return `${repo.owner}/${repo.name}`;
+}
+
 function checkRepo(repo: Repo, eslintConfig: ESLintConfig = {}, installedPlugins: Array<InstalledPlugin>): Promise<Result> {
   return makeTmp()
     .then(path => {
-      log(repo)(`created tmp directory ${path}`);
-      log(repo)('cloning repo...');
+      progressBars[repoFullName(repo)].tick({ phase: 'Cloning repository from GitHub...' });
       const host = repo.host || 'github.com';
       return clone(`git@${host}:${repo.owner}/${repo.name}`, path, 1);
     })
     .then(path => {
       process.chdir(path);
-      log(repo)(`cloned repo into tmp directory`);
+      progressBars[repoFullName(repo)].tick({ phase: 'Checking ESLint config...' });
       const defaultBaseConfig = { extends: 'buildo' };
       const config = {
         useEslintrc: false,
@@ -115,13 +131,12 @@ function checkRepo(repo: Repo, eslintConfig: ESLintConfig = {}, installedPlugins
       installedPlugins.forEach(({ name, path }) => cli.addPlugin(name, require(path)));
       const files = repo.paths || ['src', 'web/src'];
       const report = cli.executeOnFiles(files);
-      const formatter = cli.getFormatter('stylish');
       if (report.errorCount > 0) {
-        log(repo)(formatter(report.results));
+        progressBars[repoFullName(repo)].tick({ phase: `⛔️  Done! ${report.errorCount} errors` });
       } else {
-        log(repo)('No style errors!')
+        progressBars[repoFullName(repo)].tick({ phase: '✅  Done! No errors!' });
       }
-      return { repo, errorCount: report.errorCount };
+      return { repo, report };
     });
 }
 
@@ -134,19 +149,51 @@ if (!argv.config) {
 
 const config = JSON.parse(fs.readFileSync(argv.config, 'utf8'));
 
+let progressBars: {[key: string]: ProgressBar} = {};
+
+const renderProgressBars = () => {
+  progressBars = config.repos.reduce((bars, repo) => {
+    const bar = new ProgressBar(`${colored(repo)(repoFullName(repo))} [:bar] :phase`, {
+      complete: '▫️',
+      incomplete: ' ',
+      width: 20,
+      total: 4
+    });
+    bar.renderThrottle = 100;
+    bar.tick();
+    bars[repoFullName(repo)] = bar;
+    return bars;
+  }, {});
+}
+
 installPlugins(config.eslintConfig.plugins || [])
 .then(installedPlugins => {
+  renderProgressBars();
   return Promise.all(config.repos.map(repo => checkRepo(repo, config.eslintConfig, installedPlugins).catch(e => log(repo)(e))));
 })
 .then(results => {
   const icon = errorCount => errorCount > 0 ? '⛔️' : '✅';
-  const entries = results.map(({ repo: { owner, name }, errorCount }) => `|${icon(errorCount)} | ${owner}/${name} | ${errorCount} |`).join('\n');
+  const entries = results.map(({ repo: { owner, name }, report: { errorCount } }) => `|${icon(errorCount)} | ${owner}/${name} | ${errorCount} |`).join('\n');
   const table = [
     '| |  repo   | errors |',
     '|-|---------|--------|',
     `${entries}`
   ].join('\n');
+  console.log();
+  if (results.filter(r => r.report.errorCount > 0).length > 0) {
+    console.log(colors.bold('👇  Here\'s all the errors I\'ve found 👇\n'));
+  }
+  const formatter = new CLIEngine(config).getFormatter('stylish');
+  results.forEach(({ repo, report }) => {
+    if (report.errorCount > 0) {
+      log(repo)(formatter(report.results));
+    }
+  });
+
+  console.log(colors.bold('🎉  Here\'s your linto report!\n'));
   console.log(table);
-  clipboard.copy(table, () => console.log('Copied to the clipboard'));
+  console.log();
+  clipboard.copy(table, () => console.log('📋  Automatically copied to the clipboard!\n'));
+
 });
 

@@ -16,6 +16,7 @@
     "gift": "^0.10.0",
     "npmi": "^2.0.1",
     "tmp": "^0.0.31",
+    "progress": "^1.1.5",
     "yargs": "^6.4.0"
   },
   "devDependencies": {
