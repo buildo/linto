@@ -12,19 +12,22 @@ const clipboard = require('copy-paste');
 const ProgressBar = require('progress');
 const table = require('markdown-table');
 const emoji = require('node-emoji').emoji;
+const deepMerge = require('deepmerge');
 const yaml = require('js-yaml');
 
 type ESLintConfig = {
   rules?: { [_: string]: 0 | 1 | 2 | Object },
   extends?: string,
-  plugins?: Array<string>
+  plugins?: Array<string>,
+  ignorePattern?: Array<string>
 };
 
 type Repo = {
   owner: string,
   name: string,
-  paths: ?Array<string>,
-  host: ?string
+  paths?: Array<string>,
+  host?: string,
+  eslintConfig?: ESLintConfig
 };
 
 type Result = {
@@ -126,10 +129,12 @@ function checkRepo(repo: Repo, eslintConfig: ESLintConfig = {}, installedPlugins
     .then(path => {
       process.chdir(path);
       progressBars[repoFullName(repo)].tick({ phase: 'Checking ESLint config...' });
-      const defaultBaseConfig = { extends: 'buildo' };
+      const repoConfig = repo.eslintConfig || {};
+      const mergedConfig = deepMerge(eslintConfig, repoConfig);
       const config = {
         useEslintrc: false,
-        baseConfig: Object.assign({}, defaultBaseConfig, eslintConfig)
+        ignorePattern: mergedConfig.ignorePattern,
+        baseConfig: mergedConfig
       };
       const cli = new CLIEngine(config);
       installedPlugins.forEach(({ name, path }) => cli.addPlugin(name, require(path)));
