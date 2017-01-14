@@ -2,6 +2,7 @@
   "name": "linto",
   "version": "1.1.0",
   "main": "lib",
+  "files": ["lib"],
   "author": "buildo",
   "license": "MIT",
   "bin": {
