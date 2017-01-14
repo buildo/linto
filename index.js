@@ -188,10 +188,10 @@ installPlugins(config.eslintConfig.plugins || [])
   return Promise.all(config.repos.map(repo => checkRepo(repo, config.eslintConfig, installedPlugins).catch(e => log(repo)(e))));
 })
 .then(results => {
-  const icon = errorCount => errorCount > 0 ? emoji.x : emoji.white_check_mark;
+  const icon = (errorCount, warningCount) => errorCount > 0 ? emoji.x : warningCount > 0 ? emoji.warning : emoji.white_check_mark;
   const report = table([
    ['', 'repo', 'errors', 'warnings'],
-   ...results.map(({ repo, report: { errorCount, warningCount } }) => [icon(errorCount), repoFullName(repo), errorCount, warningCount]),
+   ...results.map(({ repo, report: { errorCount, warningCount } }) => [icon(errorCount, warningCount), repoFullName(repo), errorCount, warningCount]),
   ], {
     align: ['c', 'l', 'c', 'c']
   });
