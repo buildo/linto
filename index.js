@@ -28,7 +28,8 @@ type Result = {
   repo: Repo,
   report: {
     errorCount: number
-  }
+  },
+  path: string
 };
 
 const repoColors = { };
@@ -136,7 +137,7 @@ function checkRepo(repo: Repo, eslintConfig: ESLintConfig = {}, installedPlugins
       } else {
         progressBars[repoFullName(repo)].tick({ phase: '✅  Done! No errors!' });
       }
-      return { repo, report };
+      return { repo, report, path };
     });
 }
 
@@ -183,8 +184,11 @@ installPlugins(config.eslintConfig.plugins || [])
   if (results.filter(r => r.report.errorCount > 0).length > 0) {
     console.log(colors.bold('👇  Here\'s all the errors I\'ve found 👇\n'));
   }
-  const formatter = new CLIEngine(config).getFormatter('stylish');
-  results.forEach(({ repo, report }) => {
+  const formatter = new CLIEngine(config).getFormatter('codeframe');
+  results.forEach(({ repo, report, path }) => {
+    // The 'codeframe' formatter prints paths relative to the cwd.
+    // This then ensures we print paths relative to each repo root.
+    process.chdir(path);
     if (report.errorCount > 0) {
       log(repo)(formatter(report.results));
     }
