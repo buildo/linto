@@ -8,6 +8,7 @@ const colors = require('colors/safe');
 const { CLIEngine } = require('eslint');
 const git = require('gift');
 const npmi = require('npmi');
+const clipboard = require('copy-paste');
 
 type ESLintConfig = {
   rules?: { [_: string]: 0 | 1 | 2 | Object },
@@ -139,9 +140,13 @@ installPlugins(config.eslintConfig.plugins || [])
 })
 .then(results => {
   const icon = errorCount => errorCount > 0 ? '⛔️' : '✅';
-  const res = results.map(({ repo: { owner, name }, errorCount }) => `|${icon(errorCount)} | ${owner}/${name} | ${errorCount} |`);
-  console.log('| |  repo   | errors |');
-  console.log('|-|---------|--------|');
-  console.log(res.join('\n'));
+  const entries = results.map(({ repo: { owner, name }, errorCount }) => `|${icon(errorCount)} | ${owner}/${name} | ${errorCount} |`).join('\n');
+  const table = [
+    '| |  repo   | errors |',
+    '|-|---------|--------|',
+    `${entries}`
+  ].join('\n');
+  console.log(table);
+  clipboard.copy(table, () => console.log('Copied to the clipboard'));
 });
 
