@@ -12,6 +12,7 @@ const clipboard = require('copy-paste');
 const ProgressBar = require('progress');
 const table = require('markdown-table');
 const emoji = require('node-emoji').emoji;
+const yaml = require('js-yaml');
 
 type ESLintConfig = {
   rules?: { [_: string]: 0 | 1 | 2 | Object },
@@ -150,8 +151,14 @@ if (!argv.config) {
   console.log('Usage: linto --config=config.json');
   process.exit(1);
 }
-
-const config = JSON.parse(fs.readFileSync(argv.config, 'utf8'));
+const configFile = fs.readFileSync(argv.config, 'utf8');
+const config = (() => {
+  try {
+    return JSON.parse(configFile);
+  } catch (e) {
+    return yaml.safeLoad(configFile);
+  }
+})();
 
 let progressBars: {[key: string]: ProgressBar} = {};
 
