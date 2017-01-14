@@ -1,4 +1,5 @@
-# linto
+# linto 💄
+![]([![npm](https://img.shields.io/npm/v/linto.svg)]())
 
 A tool to test [ESLint](https://github.com/eslint/eslint) configurations against a set of git repos.
 
