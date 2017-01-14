@@ -1,7 +1,7 @@
 # linto 💄
 [![npm](https://img.shields.io/npm/v/linto.svg?style=flat-square)]()
 
-A tool to test [ESLint](https://github.com/eslint/eslint) configurations against a set of git repos.
+A tool to test [ESLint](https://github.com/eslint/eslint) configurations against a set of GitHub repos.
 
 ## Installation
 
@@ -36,12 +36,15 @@ where `config.json` has the following structure:
 By default, linto checks the `src` and the `src/web` directories of each repo. This default can be overridden on a repo base:
 
 ```json
+{
   "repos": [{
     "owner": "buildo",
     "name": "someMonoRepo",
     "paths": ["thefrontend/src"]
   }]
-}```
+}
+```
+
 
 The default ESLint configuration is
 
@@ -62,26 +65,10 @@ which you can override by passing a configuration like
 }
 ```
 
-## Known limitations
-This currently works with standard eslint rules and `eslint-config-buildo`.
-This means you cannot test rules coming from an arbitrary plugin.
+## Plugin support
+You can include any ESLint plugin in the config, as long as it's available on npm.
 
-An easy workaround is to clone this repo, then
-
-```bash
-# install dependencies
-yarn
-# install custom plugin
-yarn add eslint-plugin-whatever
-```
-
-and use it like:
-
-```bash
-yarn start -- --config=config.json
-```
-
-where `config.json` looks like:
+If, for example, you provide the following config
 
 ```json
 {
@@ -91,3 +78,5 @@ where `config.json` looks like:
   }
 }
 ```
+
+then linto will try to retrieve `eslint-plugin-whatever` from npm and make it available to ESLint.
