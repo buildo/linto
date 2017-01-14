@@ -16,7 +16,8 @@ type ESLintConfig = {
 type Repo = {
   owner: string,
   name: string,
-  paths: ?Array<string>
+  paths: ?Array<string>,
+  host: ?string
 };
 
 type Result = {
@@ -43,7 +44,8 @@ function checkRepo(repo: Repo, eslintConfig: ESLintConfig = {}): Promise<void> {
     tmp.dir({ unsafeCleanup: true }, (err, path, cleanupCallback) => {
       log(repo)(`created tmp directory ${path}`);
       log(repo)('cloning repo...');
-      git.clone(`git@github.com:${repo.owner}/${repo.name}`, path, 1, (err, r) => {
+      const host = repo.host || 'github.com';
+      git.clone(`git@${host}:${repo.owner}/${repo.name}`, path, 1, (err, r) => {
         if (err) {
           log(repo)(err);
           return;
