@@ -1,5 +1,5 @@
 # linto 💄
-[![npm](https://img.shields.io/npm/v/linto.svg?style=flat-square)]()
+[![npm](https://img.shields.io/npm/v/linto.svg?style=flat-square)](https://www.npmjs.com/package/linto)
 
 A tool to test [ESLint](https://github.com/eslint/eslint) configurations against a set of GitHub repos.
 
