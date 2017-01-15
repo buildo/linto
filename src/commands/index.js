@@ -1,5 +1,6 @@
 // @flow
 
 module.exports = {
-  run: require('./run')
+  run: require('./run'),
+  clean: require('./clean')
 };

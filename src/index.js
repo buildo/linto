@@ -29,6 +29,14 @@ program
   });
 
 program
+  .command('clean')
+  .description("Delete any temp directories, useful in case linto didn't terminate properly and it couldn't perform its cleanup")
+  .option('-n, --dry-run', "List, but don't delete, tmp directories")
+  .action(({ dryRun }) => {
+    commands.clean(dryRun);
+  });
+
+program
   .version(version)
   .parse(process.argv);
 
