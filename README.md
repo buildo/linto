@@ -14,7 +14,7 @@ npm install -g linto
 ## Usage
 
 ```bash
-linto --config=config.json
+linto run -c config.json
 ```
 
 where `config.json` has the following structure:
@@ -33,7 +33,19 @@ where `config.json` has the following structure:
 }
 ```
 
-By default, linto checks the `src` and the `src/web` directories of each repo. This default can be overridden on a repo base:
+You can also write the config file in YAML format:
+
+```yaml
+repos:
+  - owner: buildo
+    name: linto
+eslintConfig:
+  rules:
+    semi: error
+```
+
+### Target paths
+By default, linto checks the `src` and the `web/src` directories of each repo. This default can be overridden on a repo base:
 
 ```json
 {
@@ -45,27 +57,7 @@ By default, linto checks the `src` and the `src/web` directories of each repo. T
 }
 ```
 
-
-The default ESLint configuration is
-
-```json
-{
-  "extends": "buildo"
-}
-```
-
-which you can override by passing a configuration like
-
-```json
-{
-  "extends": null,
-  "rules": {
-    "semi": 2
-  }
-}
-```
-
-## Plugin support
+### Plugin support
 You can include any ESLint plugin in the config, as long as it's available on npm.
 
 If, for example, you provide the following config
@@ -80,3 +72,16 @@ If, for example, you provide the following config
 ```
 
 then linto will try to retrieve `eslint-plugin-whatever` from npm and make it available to ESLint.
+
+### Cleanup
+linto creates temporary directories during its execution (to clone repos, install plugins, etc) and it cleans up after itself. However, in case linto is stopped during its execution, some of the directories it created may not be deleted. In order to remove all linto's temporary directories, you can run
+
+```sh
+linto clean
+```
+
+You can also perform a dry run, using `-n` or `--dry-run`:
+
+```sh
+linto clean -n # don't delete anything, just print what would be deleted
+```
