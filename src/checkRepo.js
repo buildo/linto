@@ -44,9 +44,10 @@ function checkRepo(repo: Repo, eslintConfig: ESLintConfig = {}, installedPlugins
       const files = repo.paths || ['src', 'web/src'];
       const report = cli.executeOnFiles(files);
       if (report.errorCount > 0) {
-        progressBars[repoFullName(repo)].tick(1, { status: emoji.x, phase: `Done! ${report.errorCount} errors` });
+        progressBars[repoFullName(repo)].tick(1, { status: emoji.x, phase: `Done! ${report.errorCount} errors and ${report.warningCount} warnings` });
+      } else if (report.warningCount > 0) {
+        progressBars[repoFullName(repo)].tick(1, { status: emoji.warning, phase: `Done! ${report.warningCount} warnings` });
       } else {
-
         progressBars[repoFullName(repo)].tick(1, { status: emoji.white_check_mark, phase: 'Done! No errors!' });
       }
       return { repo, report, path };
