@@ -2,26 +2,25 @@
 
 import type { Repo } from './repo';
 
-const ProgressBar = require('progress');
+const ProgressBar = require('ascii-progress');
 const { repoFullName } = require('./repo');
 const { colored } = require('./logging');
 
 export type ProgressBars = {[repoName: string]: ProgressBar};
 
 function renderProgressBars(repos: Array<Repo>): {[repoName: string]: ProgressBar} {
+  // const multi = new Multiprogress(process.stderr);
+
   return repos.reduce((bars, repo) => {
-    const bar = new ProgressBar(`${colored(repo)(repoFullName(repo))} [:bar] :phase`, {
-      complete: '▫️',
-      incomplete: ' ',
+    const bar = new ProgressBar({
+      schema: `:status  [:bar] ${colored(repo)(repoFullName(repo))} :phase`,
       width: 20,
-      total: 4
+      blank: ' ',
+      total: 3
     });
-    bar.renderThrottle = 100;
-    bar.tick();
     bars[repoFullName(repo)] = bar;
     return bars;
-  }, {}
-  );
+  }, {});
 
 }
 

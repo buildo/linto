@@ -13,6 +13,7 @@ const clipboard = require('copy-paste');
 type Report = string;
 
 function run(config: Object): Promise<Report> {
+  console.log(colors.bold(`${emoji.mag}  Analyzing the repos:\n`))
   return installPlugins(config.eslintConfig.plugins || [])
   .then(installedPlugins => {
     const progressBars = renderProgressBars(config.repos);
