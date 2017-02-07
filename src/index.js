@@ -21,11 +21,18 @@ const version = require('../package.json').version;
 program
   .command('run')
   .option('-c, --config <config>', 'configuration')
-  .action(({ config }) => {
+  .option('--fix', 'also run eslint --fix and open relative pull requests')
+  .option('-n, --dry-run', 'when used in combination with --fix it performs a dry run of the actual fixes')
+  .option('--github-token [github-token]', 'token used by --fix for opening the PRs. Mandatory when --fix is provided (and --dry-run is not)')
+  .action(({ config, fix, dryRun, githubToken }) => {
     if (!config) {
       program.emit('run', null, ['--help']);
     }
-    commands.run(parseConfig(config));
+    if (fix && !dryRun && !githubToken) {
+      console.log('You need to provide a GitHub token');
+      program.emit('run', null, ['--help']);
+    }
+    commands.run(parseConfig(config), fix, dryRun, githubToken);
   });
 
 program
