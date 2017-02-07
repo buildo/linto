@@ -9,15 +9,14 @@ const { generateReport } = require('../report');
 const { log } = require('../logging');
 const emoji = require('node-emoji').emoji;
 const clipboard = require('copy-paste');
+const inquirer = require('inquirer');
 
-type Report = string;
-
-function run(config: Object): Promise<Report> {
+function run(config: Object, fix: boolean, dryRun: boolean, githubToken: ?string): Promise<void> {
   console.log(colors.bold(`${emoji.mag}  Analyzing the repos:\n`))
   return installPlugins(config.eslintConfig.plugins || [])
   .then(installedPlugins => {
     const progressBars = renderProgressBars(config.repos);
-    return Promise.all(config.repos.map(repo => checkRepo(repo, config.eslintConfig, installedPlugins, progressBars).catch(e => log(repo)(e))));
+    return Promise.all(config.repos.map(repo => checkRepo(repo, config.eslintConfig, installedPlugins, progressBars, fix, githubToken).catch(e => log(repo)(e))));
   })
   .then(results => {
     const icon = (errorCount, warningCount) => errorCount > 0 ? emoji.x : warningCount > 0 ? emoji.warning : emoji.white_check_mark;
@@ -39,10 +38,60 @@ function run(config: Object): Promise<Report> {
     console.log(colors.bold(`${emoji.tada}  Here's your linto report!\n`));
     console.log(report);
     console.log();
-    clipboard.copy(report, () => console.log(`${emoji.clipboard}  Automatically copied to the clipboard!\n`));
+    clipboard.copy(report, () => {
+      console.log(`${emoji.clipboard}  Automatically copied to the clipboard!\n`);
 
-    return report;
+      if (fix) {
+        console.log(colors.bold(`${emoji.gear}  You ran linto with '--fix'. Applying the fixes locally...`));
+        if (dryRun) {
+          return Promise.all(results.map(({ fix }) => fix(dryRun))).then(fixes => {
+            if (fixes.filter(diffs => !!diffs).length === 0) {
+              console.log(colors.bold('No fixes can be applied.\n'));
+            }
+            console.log(colors.bold(`\nIf ran without '--dry-run' pull requests with these diffs would be opened:\n`));
+            fixes.filter(diffs => !!diffs).forEach((diffs, index) => {
+              const repo = results[index].repo;
+              log(repo)(`\n\n${diffs.map(highlightDiff).join('\n\n')}\n\n`);
+            });
+            console.log();
+            console.log(colors.bold('Re-run without -n to open the pull requests.'));
+            console.log();
+
+          });
+        } else {
+          return Promise.all(results.map(({ fix }) => fix(dryRun)))
+            .then(prs => {
+              if (prs.filter(pr => !!pr).length === 0) {
+                console.log(colors.bold('No pull requests needed to be open'));
+              } else {
+                console.log(colors.bold(`Done! Here's a list of the pull requests that have been opened:\n`));
+                console.log(prs.map(pr => `  - ${pr.htmlUrl}`).join('\n'));
+              }
+            });
+        }
+
+      }
+    });
+
   });
+}
+
+// FIXME: move this to a separate file
+function highlightDiff(diff: string): string {
+  return diff.split('\n').map(line => {
+    if (line.startsWith('+++')
+      || line.startsWith('---')
+      || line.startsWith('@@')) {
+      return colors.yellow(line);
+    }
+    if (line.startsWith('+')) {
+      return colors.green(line);
+    }
+    if (line.startsWith('-')) {
+      return colors.red(line);
+    }
+    return line;
+  }).join('\n');
 }
 
 module.exports = run;
