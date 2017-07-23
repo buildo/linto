@@ -32,7 +32,8 @@
     "octokat": "^0.6.2",
     "os-tmpdir": "^1.0.2",
     "rimraf": "^2.5.4",
-    "tmp": "^0.0.31"
+    "tmp": "^0.0.31",
+    "snyk": "^1.25.2"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",
@@ -46,6 +47,8 @@
     "start": "flow-node src/index.js",
     "flow": "flow",
     "build": "mkdir -p lib && flow-remove-types src --out-dir lib",
-    "prepublish": "npm run flow && npm run build"
-  }
+    "prepublish": "npm run snyk-protect && npm run flow && npm run build",
+    "snyk-protect": "snyk protect"
+  },
+  "snyk": true
 }
