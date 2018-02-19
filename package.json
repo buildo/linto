@@ -28,7 +28,7 @@
     "js-yaml": "^3.7.0",
     "markdown-table": "^1.0.0",
     "node-emoji": "^1.5.0",
-    "npmi": "^2.0.1",
+    "npmi": "^3.0.0",
     "octokat": "^0.6.2",
     "os-tmpdir": "^1.0.2",
     "rimraf": "^2.5.4",
